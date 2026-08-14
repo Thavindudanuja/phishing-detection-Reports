@@ -1,1 +1,40 @@
+# Phishing Email Analysis — Sample 02
 
+**Source of sample:** rf-peixoto/phishing_pot (GitHub)
+**Filename / sample ID:** sample-02.eml
+
+## 1. Email Metadata
+| Field | Value |
+|---|---|
+| Claimed sender | Microsoft account team |
+| From address | no-reply@access-accsecurity.com |
+| Subject | Microsoft account unusual signin activity |
+| Date/time sent | 8 Sep 2023, 05:46:57 UTC |
+
+## 2. Header Analysis
+| Check | Result |
+|---|---|
+| SPF | none |
+| DKIM | none |
+| DMARC | permerror (malformed DMARC record — a config error, distinct from a transient temperror) |
+
+From domain (access-accsecurity.com) has no relation to Microsoft's real domains (microsoft.com / accountprotection.microsoft.com).
+
+## 3. Link / Infrastructure Analysis
+No credential-harvesting login page — all body links use `mailto:sotrecognizd@gmail.com` (a personal Gmail address, not a Microsoft channel), for "Report The User" and "unsubscribe" actions. Contains an invisible 1x1 tracking pixel pointing to thebandalisty.com/track/..., a shared open tracking-pixel service reused across hundreds of unrelated spam/phishing campaigns (731 scans over ~2 years on urlscan.io), now showing a parked/domain-for-sale page.
+
+## 5. Social Engineering Tactics
+- [x] Fear/urgency (unusual signin from Russia/Moscow)
+- [x] Authority impersonation (Microsoft account team)
+- [x] Engagement bait via mailto reply, not credential entry
+
+## 6. Red Flags Summary
+1. SPF/DKIM both fully absent (none), DMARC malformed (permerror)
+2. Sender domain unrelated to Microsoft
+3. All "action" links route to a personal Gmail mailto:, not a Microsoft portal — inconsistent with any real Microsoft workflow
+4. Invisible tracking pixel confirms this is address-validation/engagement-harvesting rather than credential phishing
+
+## 7. Verdict
+**Classification:** Phishing (reconnaissance/engagement-harvesting variant, not credential-harvesting)
+**Confidence:** High
+**Analyst summary:** Impersonates Microsoft's account security team to provoke a reply or click confirming the address is live, via mailto-based "actions" rather than a fake login page. Combined with a hidden tracking pixel from a known multi-campaign tracking service, this fits an inbox-validation/targeting pattern rather than direct credential theft.
