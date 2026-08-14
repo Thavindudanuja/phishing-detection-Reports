@@ -1,1 +1,93 @@
+# Phishing Email Analysis — Sample 01
 
+**Analyst:** Thavindu
+**Date analyzed:** [08/13/2026]
+**Source of sample:** rf-peixoto/phishing_pot (GitHub) — email/sample-1.eml
+**Filename / sample ID:** sample-1.eml
+
+---
+
+## 1. Email Metadata (at a glance)
+
+| Field | Value |
+|---|---|
+| Claimed sender (display name) | BANCO DO BRADESCO LIVELO |
+| From address | banco.bradesco@atendimento.com.br |
+| Reply-To address | (none present) |
+| Return-Path | root@ubuntu-s-1vcpu-1gb-35gb-intel-sfo3-06 |
+| Subject line | CLIENTE PRIME - BRADESCO LIVELO: Seu cartão tem 92.990 pontos LIVELO expirando hoje! |
+| Date/time sent | 19 Sep 2023, 18:35:49 UTC |
+
+---
+
+## 2. Header Analysis
+
+**Tools used:** Google Admin Toolbox Messageheader
+
+- **Received chain (origin path):** Message originated from a Postfix mail server on host `ubuntu-s-1vcpu-1gb-35gb-intel-sfo3-06` (IP 137.184.34.4 — a DigitalOcean-range IP, not Bradesco infrastructure), then routed through Microsoft Exchange Online Protection to the recipient mailbox.
+- **Authentication results:**
+
+| Check | Result | Notes |
+|---|---|---|
+| SPF | temperror | DNS timeout during lookup on sender's mailfrom domain — inconclusive/broken, not a pass |
+| DKIM | none | Message not signed at all |
+| DMARC | temperror | Errored rather than resolving; policy could not be evaluated |
+
+- **Originating IP / ASN:** 137.184.34.4 — does not belong to Bradesco or any known email service; consistent with a rented/throwaway VPS used to send bulk phishing mail.
+- **Anomalies noticed:** From address domain (`atendimento.com.br`) has no relation to Bradesco's real domain; Return-Path is a root@ Linux server address, not a corporate mail system; all three authentication checks fail or error, which legitimate bank mail would not.
+
+---
+
+## 3. URL / Link Analysis
+
+**Tool used:** URLScan.io + CyberChef (to decode the base64 HTML body first)
+
+| # | Displayed link text | Actual destination URL | URLScan verdict | Notes |
+|---|---|---|---|---|
+| 1 | "Clique aqui" (view images) | https://blog1seguimentmydomaine2bra.me/ | No classification (see notes) | Same URL reused for main CTA |
+| 2 | "Resgatar Agora" (Redeem Now — main CTA) | https://blog1seguimentmydomaine2bra.me/ | No classification (see notes) | |
+
+- **Domain age / registrar:** TLS cert for the domain was issued ~Sept 14, 2023 — 5 days before this email was sent, consistent with a domain freshly stood up for this campaign.
+- **Redirect chain observed:** Scans close to the campaign date (Sept 24, 2023) show 20 HTTP transactions across 9 domains/IPs before landing on `/lander`.
+- **Behavior notes:** A scan close to the campaign window returned a fake "verifying connection" loading page instead of a real form — consistent with cloaking against scanner/bot traffic (real victims would see a fake Bradesco/Livelo login form; automated tools get shown a decoy). Later scans (mid-2024) show the domain briefly unresolvable, then eventually resolving to unrelated generic parked content (hotel/retail ads) — consistent with the domain expiring and being picked up by a parking service after the campaign ended.
+- Does the link destination match the displayed text or claimed brand? **No** — nothing in the domain relates to Bradesco or Livelo.
+
+---
+
+## 4. Attachment Analysis
+
+None — this sample contains no attachments.
+
+---
+
+## 5. Social Engineering Tactics Identified
+
+- [x] Urgency / time pressure ("pontos... expirando hoje" — points expiring today)
+- [ ] Authority impersonation (IT dept, bank, executive/CEO fraud)
+- [ ] Fear or threat language
+- [x] Reward/curiosity bait (92,990 Livelo points, mileage exchange, up to 35% card discount)
+- [x] Request for sensitive action (redeem points via link — credential-harvesting login expected on landing page)
+- [ ] Poor grammar/spelling inconsistent with claimed sender
+- [ ] Generic greeting instead of personalized name
+- [ ] Other:
+
+---
+
+## 6. Red Flags Summary
+
+1. From-address domain (atendimento.com.br) has zero relation to the impersonated brand (Bradesco/Livelo)
+2. SPF/DKIM/DMARC all fail or error — no valid authentication for a message claiming to be from a major bank
+3. Sending infrastructure is a generic VPS (DigitalOcean IP range), not bank mail infrastructure
+4. Destination URL is an unrelated, freshly-registered throwaway domain with no brand connection
+5. Urgency + reward bait ("points expiring today," ~93,000 points) designed to drive an immediate click
+6. Landing site shows scanner-cloaking behavior, typical of credential-harvesting kits evading detection
+
+---
+
+## 7. Verdict
+
+**Classification:** Phishing
+**Confidence:** High
+**Recommended action:** Block sender domain and originating IP at the mail gateway; add destination domain to blocklist; report to email provider; no user action needed to remediate (sample sourced from a research honeypot, not a live inbox).
+
+**Analyst summary:** This message impersonates Bradesco/Livelo to pressure recipients into clicking a "redeem points" link before they "expire." All three email authentication checks (SPF/DKIM/DMARC) fail or error, the sending and landing infrastructure have no legitimate connection to the claimed brand, and the landing domain shows scanner-cloaking behavior consistent with a credential-harvesting phishing kit.
