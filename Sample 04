@@ -1,1 +1,39 @@
+# Phishing Email Analysis — Sample 04
 
+**Source:** rf-peixoto/phishing_pot — sample-04.eml
+
+## 1. Metadata
+| Field | Value |
+|---|---|
+| Claimed sender | [BB] - Seu saldo foi liberado - Código: 11084339647130851921 |
+| From address | prestonconstance587@gmail.com |
+| Subject | Liberação de IRPF - 6NwlyfzWcsNerv0 |
+| Date | 26 Jul 2023, 23:29:01 GMT+5:30 |
+
+## 2. Header Analysis
+SPF: pass | DKIM: pass | DMARC: pass — all pass because the message was sent through a genuine Gmail account, not a spoofed domain. Authentication passing here confirms Gmail's mail servers, not sender trustworthiness — a key distinction from samples 01-03.
+
+## 3. Attachment Analysis
+Contains a PDF attachment (not a body link) impersonating a Brazilian tax authority (IRPF/Receita Federal) balance-release notice. The PDF's content is effectively a full-page image with an invisible link annotation covering the entire page:
+`/URI(https://okokoaksoa.z13.web.core.windows.net/)`
+— clicking anywhere on the "document" redirects to this URL.
+
+## 4. URL / Infrastructure Analysis
+Destination hosted on Microsoft Azure Static Website hosting (*.z13.web.core.windows.net) — abuse of a trusted cloud platform to evade domain-reputation blocklisting. As of analysis, DNS resolution for the subdomain fails entirely (storage account removed/expired), consistent with a faster platform-level takedown compared to independently-registered phishing domains.
+
+## 5. Social Engineering Tactics
+- [x] Authority impersonation (Brazilian tax authority / bank code "[BB]")
+- [x] Financial incentive bait ("balance released")
+- [x] Fake protocol/reference number for legitimacy
+- [x] PDF attachment as delivery vector rather than a body link
+
+## 6. Red Flags Summary
+1. Sent from a personal Gmail address, not any official government or bank domain — despite full SPF/DKIM/DMARC pass
+2. PDF attachment is effectively an image with a full-page invisible link, not a genuine document
+3. Destination abuses a trusted cloud hosting platform (Azure) rather than a standalone domain
+4. Fabricated tax-refund/balance-release narrative with a fake reference number
+
+## 7. Verdict
+**Classification:** Phishing (PDF/cloud-hosting delivery variant)
+**Confidence:** High
+**Analyst summary:** Demonstrates that authentication passing (SPF/DKIM/DMARC) does not equal sender legitimacy when a genuine free-mail account is used. The PDF attachment is a disguised full-page link rather than real document content, and the destination abuses Azure's trusted static-hosting domain to reduce the chance of blocklisting — infrastructure has since been taken down (DNS no longer resolves).
