@@ -1,1 +1,32 @@
+# Phishing Email Analysis — Sample 03
 
+**Source:** rf-peixoto/phishing_pot — sample-03.eml
+
+## 1. Metadata
+| Field | Value |
+|---|---|
+| Claimed sender | Zonnepanelen installateur (Solar panel installer) |
+| From address | zonnepaneel@appjj.serenitepure.fr |
+| Subject | Zonnepanelen voor een goede prijs |
+| Date | 3 Nov 2022, 10:26:15 GMT+5:30 |
+
+## 2. Header Analysis
+SPF: none | DKIM: none | DMARC: none — no authentication configured at all. From-domain is a throwaway/unrelated domain with no ties to any legitimate solar company.
+
+## 3. Link Analysis
+All CTAs route through `go.nltrck.com` — a Dutch affiliate ad-tracking redirect service (not attacker-registered infrastructure). Domain created 2020, currently active and resolving normally, no malicious classification on urlscan.io across 309 historical scans. URL parameters (c=495, source=consumentenbond, lp=1190) are consistent with affiliate marketing tracking, not credential-phishing kits.
+
+## 5. Social Engineering Tactics
+- [x] Emotional appeal (rising energy costs, inflation) used as a sales hook — not a security-threat hook
+- [ ] No urgency/threat language, no credential request, no brand impersonation of a specific real company
+
+## 6. Red Flags Summary
+1. Zero email authentication (SPF/DKIM/DMARC all none)
+2. Throwaway/unrelated sending domain
+3. Unsolicited bulk marketing pattern riding on an affiliate tracking redirect
+
+## 7. Verdict
+**Classification:** Spam / unsolicited commercial email (affiliate marketing) — NOT credential-phishing or malware delivery
+**Confidence:** High
+**Recommended action:** Block sender domain for poor authentication/reputation; no user credential risk identified, but still appropriate to filter as spam.
+**Analyst summary:** Unlike samples 01-02, this message shows no brand impersonation, fake login page, or data-harvesting intent — it's unauthenticated bulk marketing spam riding a legitimate ad-tracking redirect. Correctly distinguishing spam from phishing matters for accurate SOC triage and alert prioritization.
